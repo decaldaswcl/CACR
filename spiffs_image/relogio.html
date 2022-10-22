@@ -1,0 +1,66 @@
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 " >     
+      
+  <h2 class="pt-2 text">Ajuste Relogio</h2>
+  <hr class="my-4">
+  <form class="needs-validation" >
+    <div class="row g-3 " aria-hidden="true">
+
+      <div class="col-md-5 " >
+        <label for="UTC" class="form-label  ">Fuso Horário:</label>
+        <select class="form-select placeholder" id="fuso-lb" required="">
+          <option value="">Escolha...</option>              
+          <optgroup label="GMT-2"></optgroup>
+              <option value="GMT-2">Fernando de Noronha</option>
+          <optgroup label="GMT-3"></optgroup>
+              <option value="GMT-3">Brasilia</option>
+              <option value="GMT-3">São Paulo</option>
+          <optgroup label="GMT-4"></optgroup>
+              <option value="GMT-4">Cuiabá</option>
+              <option value="GMT-4">Manaus</option>
+              <option value="GMT-4">Rio Branco</option> 
+        </select>            
+      </div> 
+     
+      <div></div>
+
+      <div class="col-md-5">
+        <label for="UTC" class="form-label">Servidor NTP</label>
+        <select class="form-select placeholder" id="ntp-lb" required="">
+          <option value="">Escolha...</option>              
+          <option value="a.ntp.br">a.ntp.br</option>
+          <option value="b.ntp.br">b.ntp.br</option>
+          <option value="c.ntp.br">c.ntp.br</option>
+          <option value="a.st1.ntp.br">a.st1.ntp.br</option>
+        </select>
+        <div class="invalid-feedback">
+          Valid first name is required.
+        </div>
+      </div>
+
+      <div></div>
+
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="auto-lb">
+      
+        <label class="form-check-label" for="same-address">Atulizar data e hora automaticamente:</label>
+      </div>
+
+
+      <div class="col-md-3">
+        <label for="date" class="form-label">Data</label>
+        <input class="form-control placeholder" id="date-lb" type="date" min="2001-01-01" max="2199-01-01" value="">
+        
+      </div>
+      <div class="col-md-3">
+        <label for="hora" class="form-label">Hora</label>
+        <input id="time-lb" type="time" class="form-control placeholder">            
+      </div> 
+
+      <div class="md-3 pt-5">
+        <button class=" btn btn-primary btn-lg time-submit " type="submit">Salvar</button>
+        
+      </div> 
+      
+  </form>
+      
+</main>
