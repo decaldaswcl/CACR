@@ -1,3 +1,5 @@
 .vscode/*
 build/*
 spiffs_image/src/*
+sdkconfig.old
+.devcontainer/*

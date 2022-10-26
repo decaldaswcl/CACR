@@ -4,3 +4,4 @@ idf_component_register(SRCS "main.c"
 # que se encaixa na partição chamada 'storage'. FLASH_IN_PROJECT indica que
 # a imagem gerada deve ser flashed quando todo o projeto é flashado para
 # o destino com 'idf.py -p PORT flash'.                   
+spiffs_create_partition_image(storage ../spiffs_image FLASH_IN_PROJECT)
