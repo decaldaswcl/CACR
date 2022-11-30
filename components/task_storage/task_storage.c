@@ -26,20 +26,20 @@ esp_err_t storage_init(){
     init_spiffs();   
     
     mutex = xSemaphoreCreateMutex();
-    /*
-    write_nvs_str("dadosNVS","server", "username", "admin");
-    write_nvs_str("dadosNVS","server", "password", "admin");
     
+        return ESP_OK;
+}
+
+void set_default_nvs(){
+    write_nvs_str("dadosNVS","server", "username", "admin");
+    write_nvs_str("dadosNVS","server", "password", "admin");    
     write_nvs_int32("dadosNVS", "clock", "autotime_sntp", true);
     write_nvs_str("dadosNVS","clock", "ntp_sever", "a.ntp.br");
     write_nvs_str("dadosNVS","clock", "tz", "GMT-3");
     write_nvs_str("dadosNVS","server", "", "GMT-3");
-    write_nvs_int32("dadosNVS", "server", "server", true);
-    
+    write_nvs_int32("dadosNVS", "server", "server", true);    
     write_nvs_str("dadosNVS", "server", "ip", "192.168.1.4");
-    write_nvs_str("dadosNVS", "server", "last_check", "");
-
-    
+    write_nvs_str("dadosNVS", "server", "last_check", "");    
     write_nvs_str("dadosNVS", "wifi", "SSID0", "");
     write_nvs_str("dadosNVS", "wifi", "PASS0", "");
     write_nvs_str("dadosNVS", "wifi", "SSID1", "");
@@ -50,39 +50,50 @@ esp_err_t storage_init(){
     write_nvs_str("dadosNVS", "wifi", "PASS3", "");
     write_nvs_str("dadosNVS", "wifi", "SSID4", "");
     write_nvs_str("dadosNVS", "wifi", "PASS4", "");
-    
-
-    write_nvs_int32("dadosNVS", "timer1", "channel", 0b1100000);
-    write_nvs_int32("dadosNVS", "timer1", "week", 0b1100001);
-    write_nvs_int32("dadosNVS", "timer1", "hour_st", 1); 
-    write_nvs_int32("dadosNVS", "timer1", "min_st", 9); 
-    write_nvs_int32("dadosNVS", "timer1", "hour_en", 23); 
-    write_nvs_int32("dadosNVS", "timer1", "min_en", 10);  
-    write_nvs_int32("dadosNVS", "timer2", "channel", 0b0000010);
+    write_nvs_int32("dadosNVS", "timer1", "channel", 0b0000000);
+    write_nvs_int32("dadosNVS", "timer1", "week", 0b0000000);
+    write_nvs_int32("dadosNVS", "timer1", "hour_st", 9); 
+    write_nvs_int32("dadosNVS", "timer1", "min_st", 47); 
+    write_nvs_int32("dadosNVS", "timer1", "hour_en", 10); 
+    write_nvs_int32("dadosNVS", "timer1", "min_en", 15);  
+    write_nvs_int32("dadosNVS", "timer2", "channel", 0b0000000);
     write_nvs_int32("dadosNVS", "timer2", "week", 0b0000111);
-    write_nvs_int32("dadosNVS", "timer2", "hour_st", 2); 
-    write_nvs_int32("dadosNVS", "timer2", "min_st", 32); 
+    write_nvs_int32("dadosNVS", "timer2", "hour_st", 9); 
+    write_nvs_int32("dadosNVS", "timer2", "min_st", 47); 
     write_nvs_int32("dadosNVS", "timer2", "hour_en", 5); 
     write_nvs_int32("dadosNVS", "timer2", "min_en", 12);      
-    write_nvs_int32("dadosNVS", "timer3", "channel", 0b0000100);
-    write_nvs_int32("dadosNVS", "timer3", "week", 0b0001100);
-    write_nvs_int32("dadosNVS", "timer3", "hour_st", 15); 
-    write_nvs_int32("dadosNVS", "timer3", "min_st", 1); 
-    write_nvs_int32("dadosNVS", "timer3", "hour_en", 0); 
+    write_nvs_int32("dadosNVS", "timer3", "channel", 0b0000000);
+    write_nvs_int32("dadosNVS", "timer3", "week", 0b0000000);
+    write_nvs_int32("dadosNVS", "timer3", "hour_st", 9); 
+    write_nvs_int32("dadosNVS", "timer3", "min_st", 47); 
+    write_nvs_int32("dadosNVS", "timer3", "hour_en", 10); 
     write_nvs_int32("dadosNVS", "timer3", "min_en", 45);   
     write_nvs_int32("dadosNVS", "timer4", "channel", 0b0000000);
-    write_nvs_int32("dadosNVS", "timer4", "week", 0b1110000);
-    write_nvs_int32("dadosNVS", "timer4", "hour_st", 3); 
-    write_nvs_int32("dadosNVS", "timer4", "min_st", 54); 
-    write_nvs_int32("dadosNVS", "timer4", "hour_en", 20); 
-    write_nvs_int32("dadosNVS", "timer4", "min_en", 41);       
-    write_nvs_int32("dadosNVS", "termostate1", "channel", 0b0010000);
-    write_nvs_int32("dadosNVS", "termostate2", "channel", 0b0100000);
-    write_nvs_int32("dadosNVS", "enDigital", "channel", 0b1000000);
+    write_nvs_int32("dadosNVS", "timer4", "week", 0b0000000);
+    write_nvs_int32("dadosNVS", "timer4", "hour_st", 9); 
+    write_nvs_int32("dadosNVS", "timer4", "min_st", 47); 
+    write_nvs_int32("dadosNVS", "timer4", "hour_en", 10); 
+    write_nvs_int32("dadosNVS", "timer4", "min_en", 45);       
+    write_nvs_int32("dadosNVS", "termostate1", "channel", 0b0000000);
+    write_nvs_int32("dadosNVS", "termostate1", "type", 1);
+    write_nvs_int32("dadosNVS", "termostate1", "beta", 3500);
+    write_nvs_int32("dadosNVS", "termostate1", "mode", 0);
+    write_nvs_int32("dadosNVS", "termostate1", "temp", 25);
+    write_nvs_int32("dadosNVS", "termostate1", "offset", 1);
+    write_nvs_int32("dadosNVS", "termostate2", "channel", 0b0000000);
+    write_nvs_int32("dadosNVS", "termostate2", "type", 1);
+    write_nvs_int32("dadosNVS", "termostate2", "beta", 3500);
+    write_nvs_int32("dadosNVS", "termostate2", "mode", 0);
+    write_nvs_int32("dadosNVS", "termostate2", "temp", 25);
+    write_nvs_int32("dadosNVS", "termostate2", "offset", 1);
+    write_nvs_int32("dadosNVS", "enDigital", "channel", 0b0000000);
     write_nvs_int32("dadosNVS", "led", "mode", 0);
-    */
-    return ESP_OK;
+    write_nvs_int32("dadosNVS", "led", "rgb", 0);
+    write_nvs_int32("dadosNVS", "led", "time", 1000);
+    write_nvs_int32("dadosNVS", "led", "brightness", 100);
+
 }
+
 void shift_w(){
     char ssid_rd []= "SSID ";
     char pass_rd []= "PASS ";
@@ -264,15 +275,7 @@ esp_err_t read_nvs_str(const char *partition_name, const char *namespace, const 
    
     return -1;
 }
-esp_err_t set_default_nvs(){
-    
-    write_nvs_int32("dadosNVS","clock", "autotime_sntp", true );
-    write_nvs_str("dadosNVS","clock", "TZ", "GMT-3" );
 
-    return ESP_OK;
-
-
-}
 
 esp_err_t write_nvs_int32(const char *partition_name, const char *namespace, const char *key, int32_t valor){
     int cont_tent = 0;

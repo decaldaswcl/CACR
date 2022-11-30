@@ -47,9 +47,10 @@ char senha[] = "123456";
 bool ap_mode = false;
 page_data_t data_map[] =
 {
-    {"/admin/home/*?","home","<link>","/home.html"},
+    {"/admin/home/*?","home","<script defer src=\"/src/js/home.js\"></script>","/home.html"},
     {"/ap/*?","Assitente de conexão","<script defer src=\"/src/js/redes.js\"></script>","/ap.html"},
     {"/admin/canais/*?", "Canais","<link>","/canais.html"},
+    {"/admin/sistema/*?","Sistema","<script defer src=\"/src/js/system.js\"></script>","/system.html"},
     {"/admin/ledC/*?", "Configurações LED","<script defer src=\"/src/js/ledC.js\"></script>","/ledC.html"},
     {"/admin/relogio/*?", "Relogio","<script defer src=\"/src/js/time.js\"></script>","/relogio.html"},
     {"/admin/config/*?", "configuraçõe","<link>","/config.html"},
@@ -57,6 +58,8 @@ page_data_t data_map[] =
     {"/admin/redes/*?", "Redes","<script defer src=\"/src/js/redes.js\"></script>","/redes.html"},
     {"/admin/login/*?", "Login","<link href=\"/src/css/signin.css\" rel=\"stylesheet\">","/login.html"},
     {"/admin/timers/*?","Timers","<script defer src=\"/src/js/timers.js\"></script>","/timers.html"},
+    {"/admin/cores/*?","Seleção de cores","<script defer src=\"/src/js/colors.js\"></script>","/colors.html"},    
+    {"/admin/termostato/*?","Termostato","<script defer src=\"/src/js/thermostat.js\"></script>","/thermostat.html"},  
     {}
 };
 
@@ -68,7 +71,7 @@ void set_ap_mode(bool mode){
 static esp_err_t get_data(page_data_t *data, int type, const char *name, char * buffer ) {
 
     page_data_t *pg = data;
-    int size = 10;
+    int size = 13;
     
     ESP_LOGI(TAG, "Req: %d Uri: %s", type, name);
     if(type==1){
@@ -448,20 +451,21 @@ static esp_err_t ws_handler(httpd_req_t *req)
         strcat(&tm_ret, &c_hr);
         strcat(&tm_ret, ":"); 
         strcat(&tm_ret, &c_mn);
-        cJSON *root;
+        cJSON *root, *index;
         root = cJSON_CreateObject();
-        cJSON_AddStringToObject(root, "fuso", &timeZone);
-        auto_snpt?cJSON_AddTrueToObject(root, "auto"):cJSON_AddFalseToObject(root, "auto");
-        cJSON_AddStringToObject(root, "ntp", &ntp_sever );
-        cJSON_AddStringToObject(root, "date", &dt_ret);
-        cJSON_AddStringToObject(root, "time", &tm_ret);
+        
+        cJSON_AddItemToObject(root, "clock", index=cJSON_CreateObject());  
+        cJSON_AddStringToObject(index, "fuso", &timeZone);
+        auto_snpt?cJSON_AddTrueToObject(index, "auto"):cJSON_AddFalseToObject(index, "auto");
+        cJSON_AddStringToObject(index, "ntp", &ntp_sever );
+        cJSON_AddStringToObject(index, "date", &dt_ret);
+        cJSON_AddStringToObject(index, "time", &tm_ret);
         ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
         ws_pkt.payload = (uint8_t*)cJSON_Print(root);
         ws_pkt.len = strlen(cJSON_Print(root));
-        httpd_ws_send_frame(req, &ws_pkt);
-
+        httpd_ws_send_frame(req, &ws_pkt);        
         cJSON_Delete(root);
-        free(buf);
+        
         return ESP_OK;
         
         //ESP_LOGI(TAG, "Pacote recebido com mensagem: %s", ws_pkt.payload);
@@ -481,7 +485,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
     ws_pkt.payload = (uint8_t*)str_ret;
     ws_pkt.len = strlen(str_ret);
     httpd_ws_send_frame(req, &ws_pkt);
-    }else if(strcmp((char*)ws_pkt.payload,"ch")== 0){
+    }else if(strcmp((char*)ws_pkt.payload,"channels")== 0){
         
        
         for (size_t y = 0; y < 8; y++)
@@ -529,34 +533,56 @@ static esp_err_t ws_handler(httpd_req_t *req)
         }
         }
 
-        cJSON *root;
+        cJSON *root, *index;
         root = cJSON_CreateObject();
-       
 
-        cJSON_AddNumberToObject(root, "ch1", ch1);
-        cJSON_AddNumberToObject(root, "ch2", ch2);
-        cJSON_AddNumberToObject(root, "ch3", ch3);
-        cJSON_AddNumberToObject(root, "ch4", ch4);
-        cJSON_AddNumberToObject(root, "ch5", ch5);
-        cJSON_AddNumberToObject(root, "ch6", ch6);
-        cJSON_AddNumberToObject(root, "ch7", ch7);
+        cJSON_AddItemToObject(root, "ch", index=cJSON_CreateObject());
+        cJSON_AddNumberToObject(index, "ch1", ch1);
+        cJSON_AddNumberToObject(index, "ch1_state", get_ch_state(1));
+        cJSON_AddNumberToObject(index, "ch2", ch2);
+        cJSON_AddNumberToObject(index, "ch2_state", get_ch_state(2));
+        cJSON_AddNumberToObject(index, "ch3", ch3);
+        cJSON_AddNumberToObject(index, "ch3_state", get_ch_state(3));
+        cJSON_AddNumberToObject(index, "ch4", ch4);
+        cJSON_AddNumberToObject(index, "ch4_state", get_ch_state(4));
+        cJSON_AddNumberToObject(index, "ch5", ch5);
+        cJSON_AddNumberToObject(index, "ch5_state", get_ch_state(5));
+        cJSON_AddNumberToObject(index, "ch6", ch6);
+        cJSON_AddNumberToObject(index, "ch6_state", get_ch_state(6));
+        //cJSON_AddNumberToObject(root, "ch7", ch7);
         ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
         ws_pkt.payload = (uint8_t*)cJSON_Print(root);
         ws_pkt.len = strlen(cJSON_Print(root));
         httpd_ws_send_frame(req, &ws_pkt);
         cJSON_Delete(root);
    
+    }else if(strcmp((char*)ws_pkt.payload,"outputs")== 0){
+        cJSON *root, *index;
+        root = cJSON_CreateObject();        
+        cJSON_AddItemToObject(root, "out", index=cJSON_CreateObject());
+        cJSON_AddNumberToObject(index, "ch1_state", get_ch_state(1));
+        cJSON_AddNumberToObject(index, "ch2_state", get_ch_state(2));
+        cJSON_AddNumberToObject(index, "ch3_state", get_ch_state(3));
+        cJSON_AddNumberToObject(index, "ch4_state", get_ch_state(4));
+        cJSON_AddNumberToObject(index, "ch5_state", get_ch_state(5));
+        cJSON_AddNumberToObject(index, "ch6_state", get_ch_state(6));
+        ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
+        ws_pkt.payload = (uint8_t*)cJSON_Print(root);
+        ws_pkt.len = strlen(cJSON_Print(root));
+        httpd_ws_send_frame(req, &ws_pkt);
+        cJSON_Delete(root);
     }else if(strcmp((char*)ws_pkt.payload,"ledC")== 0){
         cJSON *root;
         root = cJSON_CreateObject();
         cJSON_AddNumberToObject(root, "mode", read_nvs_int32("dadosNVS", "led", "mode"));
+        cJSON_AddNumberToObject(root, "brightness", read_nvs_int32("dadosNVS", "led", "brightness"));
         ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
         ws_pkt.payload = (uint8_t*)cJSON_Print(root);
         ws_pkt.len = strlen(cJSON_Print(root));
         httpd_ws_send_frame(req, &ws_pkt);
         cJSON_Delete(root);
     }else if(strcmp((char*)ws_pkt.payload,"timers")== 0){
-        cJSON *root, *timer, *days;
+        cJSON *root, *timer, *days, *ind;
         char *index1[10];
         char *index2[10];
         char *start[5];
@@ -571,7 +597,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         int wk4 =read_nvs_int32("dadosNVS", "timer4", "week");
         
         
-        
+        cJSON_AddItemToObject(root, "timers", ind=cJSON_CreateObject());
         for (size_t i = 0; i < 4; i++)
         {
             itoa(i, &index1, 10);
@@ -585,7 +611,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
             sprintf(start, "%02d:%02d", hr_st, min_st);
             sprintf(end, "%02d:%02d", hr_en, min_en );
             
-            cJSON_AddItemToObject(root, index1, timer=cJSON_CreateObject()); 
+            cJSON_AddItemToObject(ind, index1, timer=cJSON_CreateObject()); 
             cJSON_AddItemToObject(timer, "days", days=cJSON_CreateObject());
             for (size_t y = 0; y < 7; y++)
             {   
@@ -605,9 +631,59 @@ static esp_err_t ws_handler(httpd_req_t *req)
         ws_pkt.payload = (uint8_t*)cJSON_Print(root);
         ws_pkt.len = strlen(cJSON_Print(root));
         httpd_ws_send_frame(req, &ws_pkt);
-        //cJSON_Delete(timer1);
+        
         cJSON_Delete(root);
 
+    }else if(strcmp((char*)ws_pkt.payload,"temp")== 0){
+        cJSON *root, *temp, *index;
+        root = cJSON_CreateObject(); 
+        cJSON_AddItemToObject(root, "temp", index=cJSON_CreateObject());
+        cJSON_AddItemToObject(index, "0", temp=cJSON_CreateObject());
+        cJSON_AddNumberToObject(temp, "temp", get_read_temp(1));
+        cJSON_AddItemToObject(index, "1", temp=cJSON_CreateObject()); 
+        cJSON_AddNumberToObject(temp, "temp", get_read_temp(2));
+        ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
+            ws_pkt.payload = (uint8_t*)cJSON_Print(root);
+            ws_pkt.len = strlen(cJSON_Print(root));
+            httpd_ws_send_frame(req, &ws_pkt);         
+        
+        cJSON_Delete(root);  
+    }else if(strcmp((char*)ws_pkt.payload,"ctemp")== 0){
+      cJSON *root, *temp, *index;
+        root = cJSON_CreateObject(); 
+        cJSON_AddItemToObject(root, "ctemp", index=cJSON_CreateObject());
+        cJSON_AddItemToObject(index, "0", temp=cJSON_CreateObject());
+        cJSON_AddNumberToObject(temp, "type", read_nvs_int32("dadosNVS", "termostate1", "type"));
+        cJSON_AddNumberToObject(temp, "beta", read_nvs_int32("dadosNVS", "termostate1", "beta"));
+        cJSON_AddNumberToObject(temp, "temp_set", read_nvs_int32("dadosNVS", "termostate1", "temp"));
+        cJSON_AddNumberToObject(temp, "offset", read_nvs_int32("dadosNVS", "termostate1", "offset"));
+        cJSON_AddNumberToObject(temp, "mode", read_nvs_int32("dadosNVS", "termostate1", "mode"));
+        cJSON_AddNumberToObject(temp, "temp", get_read_temp(1));
+        cJSON_AddItemToObject(index, "1", temp=cJSON_CreateObject()); 
+        cJSON_AddNumberToObject(temp, "type", read_nvs_int32("dadosNVS", "termostate2", "type"));
+        cJSON_AddNumberToObject(temp, "beta", read_nvs_int32("dadosNVS", "termostate2", "beta"));
+        cJSON_AddNumberToObject(temp, "temp_set", read_nvs_int32("dadosNVS", "termostate2", "temp"));
+        cJSON_AddNumberToObject(temp, "offset", read_nvs_int32("dadosNVS", "termostate2", "offset"));
+        cJSON_AddNumberToObject(temp, "mode", read_nvs_int32("dadosNVS", "termostate2", "mode"));
+        cJSON_AddNumberToObject(temp, "temp", get_read_temp(2));
+        ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
+            ws_pkt.payload = (uint8_t*)cJSON_Print(root);
+            ws_pkt.len = strlen(cJSON_Print(root));
+            httpd_ws_send_frame(req, &ws_pkt);         
+        
+        cJSON_Delete(root);  
+    }else if(strcmp((char*)ws_pkt.payload,"colors")== 0){
+        cJSON *root, *index;
+        root = cJSON_CreateObject();    
+        cJSON_AddItemToObject(root, "led", index=cJSON_CreateObject());    
+        cJSON_AddNumberToObject(index, "color", read_nvs_int32("dadosNVS", "led", "rgb"));
+        cJSON_AddNumberToObject(index, "mode", read_nvs_int32("dadosNVS", "led", "mode"));    
+        ESP_LOGI(TAG, "Cjson %s", cJSON_Print(root));
+        ws_pkt.payload = (uint8_t*)cJSON_Print(root);
+        ws_pkt.len = strlen(cJSON_Print(root));
+        httpd_ws_send_frame(req, &ws_pkt);       
+        
+        cJSON_Delete(root);
     }
     
     free(buf);
@@ -678,15 +754,18 @@ static esp_err_t index_post(httpd_req_t *req){
         char*  buf = malloc(req->content_len);        
         
         size_t buf_len = httpd_req_recv(req, buf, req->content_len);
-        char *form[] = { "mode", "", "", "", ""};
+        char *form[] = { "mode", "brightness", "", "", ""};
         esp_err_t ret;
-        for (size_t i = 0; i < 1; i++)
+        for (size_t i = 0; i < 2; i++)
         {
             char * str_parm = malloc(25);
             httpd_query_key_value(buf, form[i], str_parm, 25 );
             ESP_LOGI(TAG, "%s: %s", form[i] , str_parm);
             if(i == 0){
               ret = write_nvs_int32("dadosNVS", "led", "mode", atoi(str_parm));                           
+            }else if(i ==1 ){
+                write_nvs_int32("dadosNVS", "led", "brightness", atoi(str_parm));
+                led_set_color();
             }
 
             free(str_parm);
@@ -752,12 +831,12 @@ static esp_err_t index_post(httpd_req_t *req){
         write_nvs_int32("dadosNVS", "timer3", "channel", tmr3);
         write_nvs_int32("dadosNVS", "timer4", "channel", tmr4);
         write_nvs_int32("dadosNVS", "termostate1", "channel", termo1);
-        write_nvs_int32("dadosNVS", "termostate2", "channel", termo1);
+        write_nvs_int32("dadosNVS", "termostate2", "channel", termo2);
         write_nvs_int32("dadosNVS", "enDigital", "channel", enDig);
 
         httpd_resp_sendstr_chunk(req, NULL);
         return ESP_OK;
-    }else if((strcmp(filename, "/admin/redes") == 0)|| (strcmp(filename, "/ap")== 0)){
+    }else if((strcmp(filename, "/admin/redes") == 0)||(strcmp(filename, "/ap")== 0)){
         char*  buf = malloc(req->content_len);                
         size_t buf_len = httpd_req_recv(req, buf, req->content_len);
         char *form[] = { "ssid", "password", };
@@ -804,6 +883,7 @@ static esp_err_t index_post(httpd_req_t *req){
             
         //wifi_new_connect("Willl","12345678");
         httpd_resp_sendstr_chunk(req, NULL);
+        vTaskDelay(pdMS_TO_TICKS(1000));
         esp_restart();
         return ESP_OK;
     }else if(strcmp(filename, "/admin/timers") == 0){
@@ -863,6 +943,62 @@ static esp_err_t index_post(httpd_req_t *req){
         }
         httpd_resp_sendstr_chunk(req, NULL);        
         return ESP_OK;
+    }else if(strcmp(filename, "/admin/cores") == 0){
+        char*  buf = malloc(req->content_len);                
+        size_t buf_len = httpd_req_recv(req, buf, req->content_len);
+        char *form[] = { "color", };
+        for (size_t i = 0; i < 1; i++)
+        {
+            char * str_parm = malloc(32);
+            httpd_query_key_value(buf, form[i], str_parm, 32 );
+            ESP_LOGI(TAG, "%s: %s", form[i] , str_parm);
+                 
+            write_nvs_int32("dadosNVS", "led", "rgb", strtol(str_parm, NULL, 10 )); 
+            led_set_color();
+            free(str_parm); 
+        }
+        httpd_resp_sendstr_chunk(req, NULL);  
+        return ESP_OK;  
+        
+    }else if(strcmp(filename, "/admin/sistema") == 0){
+        set_default_nvs();
+        httpd_resp_sendstr_chunk(req, NULL);  
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        esp_restart();      
+        return ESP_OK; 
+    }else if(strcmp(filename, "/admin/termostato") == 0){
+        char*  buf = malloc(req->content_len);                
+        size_t buf_len = httpd_req_recv(req, buf, req->content_len);
+        char *form[] = { "type1", "type2", "beta1", "beta2", "mode1", "mode2", "offset1", "offset2", "temp1", "temp2" };
+        for (size_t i = 0; i < 10; i++)
+        {
+            char * str_parm = malloc(32);
+            httpd_query_key_value(buf, form[i], str_parm, 32 );
+            ESP_LOGI(TAG, "%s: %s", form[i] , str_parm);
+            for (size_t y = 1; y < 3; y++)
+            {
+                char str_term []= "termostate ";            
+                str_term[10] = y + '0';               
+                int val = strtol(str_parm, NULL, 10 );
+                if(strstr(form[i], "type1") && y==1)write_nvs_int32("dadosNVS", str_term, "type", val);
+                if(strstr(form[i], "type2") && y==2)write_nvs_int32("dadosNVS", str_term, "type", val);
+                if(strstr(form[i], "beta1") && y==1)write_nvs_int32("dadosNVS", str_term, "beta", val);
+                if(strstr(form[i], "beta2") && y==2)write_nvs_int32("dadosNVS", str_term, "beta", val);
+                if(strstr(form[i], "mode1") && y==1)write_nvs_int32("dadosNVS", str_term, "mode", val);
+                if(strstr(form[i], "mode2") && y==2)write_nvs_int32("dadosNVS", str_term, "mode", val);
+                if(strstr(form[i], "offset1") && y==1)write_nvs_int32("dadosNVS", str_term, "offset", val);
+                if(strstr(form[i], "offset2") && y==2)write_nvs_int32("dadosNVS", str_term, "offset", val);
+                if(strstr(form[i], "temp1") && y==1)write_nvs_int32("dadosNVS", str_term, "temp", val);
+                if(strstr(form[i], "temp2") && y==2)write_nvs_int32("dadosNVS", str_term, "temp", val);
+                
+            }
+                 
+            
+            
+            free(str_parm); 
+        }
+        httpd_resp_sendstr_chunk(req, NULL);  
+        return ESP_OK; 
     }
 
 

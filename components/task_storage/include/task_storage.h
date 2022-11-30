@@ -16,8 +16,9 @@ void erase_nvs_partition(const char *part);
 void init_nvs_partition(const char *part);
 void init_nvs();
 void erase_nvs();
+void set_default_nvs();
 void notify_err(esp_err_t ret);
-esp_err_t set_default_nvs();
+
 void shift_w();
 esp_err_t  write_nvs_int32(const char *partition_name, const char *namespace, const char *key, int32_t valor);
 esp_err_t write_nvs_str(const char *partition_name, const char *namespace, const char *key, const char *str);

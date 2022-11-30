@@ -153,7 +153,7 @@ static void connect_ap_handler(void* arg, esp_event_base_t event_base,
         ap_led_set_mode(LED_CONECTED_MODE);                                
         ESP_LOGI(TAG, "Ap-connected");
         start_webserver();
-        esp_wifi_disconnect();
+        //esp_wifi_disconnect();
         wifi_led_set_mode(LED_OFF_MODE);
         set_ap_mode(true);
         ap_connected = true;  
@@ -170,13 +170,10 @@ static void event_handler_got_ip(void* arg, esp_event_base_t event_base,
         char *sever;
         read_nvs_str("dadosNVS","clock", "ntp_sever", &sever);
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));       
-                
+        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip)); 
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
         init_sntp();
-        start_webserver();
-
-        
+        start_webserver();        
  }
 
 
@@ -269,7 +266,7 @@ static void print_cipher_type(int pairwise_cipher, int group_cipher)
 
 void wifi_init(void)
 {   
-    //start_mdns_service();
+    
     esp_log_level_set("wifi", ESP_LOG_WARN);
     s_wifi_event_group = xEventGroupCreate();
 
@@ -284,18 +281,21 @@ void wifi_init(void)
     //Chama task  para criar uma estação de ligação de instância 
     // de interface de rede padrão ou AP com pilha TCP/IP
     //https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/network/esp_netif.html?highlight=esp_netif_init#wifi-default-initialization
-     esp_netif_t *my_sta = esp_netif_create_default_wifi_sta();
     
     esp_netif_create_default_wifi_ap();
-    
+    esp_netif_create_default_wifi_sta();
+
+    //esp_netif_t *my_sta = esp_netif_create_default_wifi_sta();
+    /*
     esp_netif_dhcpc_stop(my_sta);
     esp_netif_ip_info_t ip_info;
-    IP4_ADDR(&ip_info.ip, 192, 168, 1, 22);
+    //IP4_ADDR(&ip_info.ip, 192, 168, 1, 22);
    	IP4_ADDR(&ip_info.gw, 192, 168, 1, 1);
    	IP4_ADDR(&ip_info.netmask, 255, 255, 255, 0);
 
     esp_netif_set_ip_info(my_sta, &ip_info);
 
+    */
     
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -307,11 +307,12 @@ void wifi_init(void)
                                                         &event_handler_sta_disconected,
                                                         NULL,
                                                         NULL));
+                                                           
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         WIFI_EVENT_AP_STADISCONNECTED,
                                                         &event_handler_ap_disconected,
                                                         NULL,
-                                                        NULL));                                                        
+                                                        NULL));                                                      
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         WIFI_EVENT_STA_START,
                                                         &event_handler_start_sta,
@@ -321,7 +322,7 @@ void wifi_init(void)
                                                         WIFI_EVENT_AP_START,
                                                         &event_handler_start_ap,
                                                         NULL,
-                                                        NULL));                                                     
+                                                        NULL));                                                    
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         WIFI_EVENT_SCAN_DONE,
                                                         &scan_done_handler,
@@ -336,9 +337,9 @@ void wifi_init(void)
                                                         WIFI_EVENT_AP_STACONNECTED,
                                                         &connect_ap_handler,
                                                         NULL,
-                                                        NULL));                                                        
-    read_nvs_str("dadosNVS", "wifi", "SSID", &ssid); 
-    read_nvs_str("dadosNVS", "wifi", "PASS", &pass);    
+                                                        NULL));   
+
+    
     wifi_config_t wifi_config_sta = {
         .sta = {  
             .ssid = "ss",
@@ -369,7 +370,7 @@ void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_start() );
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");
-
+     
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
@@ -388,9 +389,7 @@ void wifi_init(void)
                  ssid, pass);
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
-    }
-
-    /* The event will not be processed after unregister */
+    }   /* The event will not be processed after unregister */
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
     //vEventGroupDelete(s_wifi_event_group);

@@ -1,18 +1,20 @@
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 " >     
       
   
-  <h2 class="pt-2 text">Configuração LED</h2>
+  <h2 class="pt-2 text">Gerenciamento de cores</h2>
   <hr class="my-4">
   <form class="needs-validation" >
     <div class="row g-3 " aria-hidden="true">
 
       <div class="col-md-5 " >
-        <label for="UTC" class="form-label  ">Modo saida:</label>
+        <label for="mode-lb" class="form-label  ">Modo saida:</label>
         <select class="form-select placeholder" id="mode-lb" required="">  
               <option value="0">Desativado</option>  
               <option value="1">1x RGB</option>
-              <option value="2">3x Mono</option>              
-        </select>            
+              <option value="2">3x monocromatico</option>              
+        </select>
+        <label for="brightness" class="form-label">Brilho</label>
+        <input type="range" class="form-range" min="1" max="100" id="brightness">         
       </div> 
      
       <div></div>

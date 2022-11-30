@@ -1,31 +1,51 @@
-<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 " > 
-   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="staticBackdropLabel">Rede: </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          
-          <div class="modal-footer">            
-            <input class="form-control .offset-md-3" type="text" id="ssid" value="" disabled required>
-            <input class="form-control .offset-md-3" type="text" id="passw" placeholder="Senha" aria-describedby="btn_connect" required>
-            <button type="button" class="btn btn-primary" id="button_connect">Conectar</button>
-          </div>
+<div class="container-fluid">
+<main class="" > 
+  <div class="modal fade" id="connectBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h1 class="modal-title fs-5" id="staticBackdropLabel">Rede: </h1>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         
+         <div class="modal-footer">            
+           <input class="form-control .offset-md-3" type="text" id="ssid" value="aa" disabled required>
+           <input class="form-control .offset-md-3" type="text" id="passw" placeholder="Senha" aria-describedby="btn_connect" required>
+           <button type="button" class="btn btn-primary" id="button_connect">Conectar</button>
+         </div>
+       </div>
+     </div>
+  </div>
+  <div class="modal fade" id="doneBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-content">
+        <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Esquecer Rede </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </div>
-    </div>
+        <div class="modal-body">
+        <p>Atenção! Ao remover essa rede do disposivo sem ter outra salva e disponivel, o dispositivo somente será acessivel pela conexão AP.  </p>
+        <p>Tem certeza que deseja remover essa rede?</p>
+        </div>
+        <div class="modal-footer">            
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn_done">Remover</button>
+        </div>
+     </div>
+  </div>
+  </div>
 
-    <h2 class="pt-2 text">Assistente de conexão AP</h2>
-    <hr class="my-4">
+  <h2 class="pt-2 text">Redes Wifi disponiveis</h2>
+  <hr class="my-4">
 
-    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-       <button class="btn btn-primary justify-content-md-end" type="button" id="button_update" disabled>
-      
-    </button>    
-    </div>
-    
-    <div class="list-group " id="accordion" >    
-           
-    </div>
-    </main> 
+  <div class="d-grid gap-2 d-md-flex justify-content-md-end col-md-10 col-lg-7">
+     <button class="btn btn-primary justify-content-md-end " type="button" id="button_update" disabled>
+  
+     </button>    
+  </div>
+  
+  <div class="list-group col-md-10 col-lg-7 " id="accordion" >    
+        
+  </div>
+  </main> 
+</div>
