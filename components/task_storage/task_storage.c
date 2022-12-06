@@ -26,8 +26,8 @@ esp_err_t storage_init(){
     init_spiffs();   
     
     mutex = xSemaphoreCreateMutex();
-    
-        return ESP_OK;
+    //set_default_nvs();
+    return ESP_OK;
 }
 
 void set_default_nvs(){

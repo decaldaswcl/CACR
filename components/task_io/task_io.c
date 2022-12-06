@@ -319,18 +319,19 @@ static void timer_task(void *arg){
     char strftime_buf[64];
     time_t now;
     struct tm timeinfo;
+    struct tm timeinfo_start;
+    struct tm timeinfo_end;
+    
     while (true)
     {    
-
-
         time(&now);
         setenv("TZ", "UTC+3", 1);
         tzset();
         //ESP_LOGI(TAG, "Valor estado %d", timers_state);
         localtime_r(&now, &timeinfo);
+        localtime_r(&now, &timeinfo_start);
+        localtime_r(&now, &timeinfo_end);
 
-        //strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-        //ESP_LOGI(TAG, "The current date/time in Sao paulo is: %s", strftime_buf);
         int ch_tr_1 = read_nvs_int32("dadosNVS", "termostate1", "channel");
         int ch_tr_2 = read_nvs_int32("dadosNVS", "termostate2", "channel");
         
@@ -344,22 +345,25 @@ static void timer_task(void *arg){
             str_tm[5] = i + '0';
             int val = read_nvs_int32("dadosNVS", str_tm, "channel");
             int week = read_nvs_int32("dadosNVS", str_tm, "week");
-            int i_hour_st = read_nvs_int32("dadosNVS", str_tm, "hour_st"); 
-            int i_min_st = read_nvs_int32("dadosNVS", str_tm, "min_st"); 
-            int i_hour_end = read_nvs_int32("dadosNVS", str_tm, "hour_en"); 
-            int i_min_end = read_nvs_int32("dadosNVS", str_tm, "min_en");  
-
+            timeinfo_start.tm_hour = read_nvs_int32("dadosNVS", str_tm, "hour_st"); 
+            timeinfo_start.tm_min = read_nvs_int32("dadosNVS", str_tm, "min_st"); 
+            timeinfo_end.tm_hour = read_nvs_int32("dadosNVS", str_tm, "hour_en"); 
+            timeinfo_end.tm_min = read_nvs_int32("dadosNVS", str_tm, "min_en");  
+            timeinfo_start.tm_sec = 0;
+            timeinfo_end.tm_sec = 0;    
             
-            if(val != 0){
-                ESP_LOGI(TAG, " %s ch: %d" , str_tm, val); 
-                if(true ){
+            if(timeinfo.tm_year > 100){
+                              
+                double seconds_start = difftime(mktime(&timeinfo), mktime(&timeinfo_start) );
+                double seconds_end = difftime(mktime(&timeinfo), mktime(&timeinfo_end) );                
+                //ESP_LOGI(TAG,"timer ativo: %d", timeinfo.tm_year);
+                //ESP_LOGI(TAG, "%.f seconds end  .\n", seconds_end);
+                if( val != 0){
                     for (size_t y = 0; y < 7; y++)
                     {            
-                        if(week & (1 << y) && y == timeinfo.tm_wday){
-                        ESP_LOGI(TAG, " %s week: %d" , str_tm, week); 
-                            if((!( timeinfo.tm_hour < i_hour_st) && !(timeinfo.tm_min < i_min_st)) && (!(timeinfo.tm_hour > i_hour_end) &&  !(timeinfo.tm_min >= i_min_end))){
-                                                                
-                                ESP_LOGI(TAG," hora atual: %d:%d canal: %d ", timeinfo.tm_hour, timeinfo.tm_min, i );
+                        if(week & (1 << y) && y == timeinfo.tm_wday){                         
+                            if(seconds_start > 0  && seconds_end < 0){
+                                //ESP_LOGI(TAG," hora atual: %d:%d canal: %d ", timeinfo.tm_hour, timeinfo.tm_min, i );
                               
                                 if(val & (1 << 0)){
                                     set_ch_state(1, true);
@@ -395,11 +399,7 @@ static void timer_task(void *arg){
                     
                 }
                       
-            }
-            
-
-
-
+            }     
         }
 
         if(no_ch & (1 << 0))set_ch_state(1, false);
@@ -408,9 +408,7 @@ static void timer_task(void *arg){
         if(no_ch & (1 << 3))set_ch_state(4, false);
         if(no_ch & (1 << 4))set_ch_state(5, false);
         if(no_ch & (1 << 5))set_ch_state(6, false);
-        if(no_ch & (1 << 6))set_ch_state(7, false);
-
-        
+        if(no_ch & (1 << 6))set_ch_state(7, false);        
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
@@ -531,7 +529,7 @@ void init_io(){
    
     
     xTaskCreate(output_set_task,"output_set_task", 2024 ,"task1", 10,NULL);
-    xTaskCreate(timer_task,"timer_task", 2024 ,"task2", 10,NULL);
+    xTaskCreate(timer_task,"timer_task", 3024 ,"task2", 10,NULL);
     xTaskCreate(led_task,"led_task", 2024 ,"task3", 10,NULL);
     xTaskCreate(termostate_task,"termostate_task", 2024 ,"task4", 10,NULL);
     ESP_LOGI(TAG,"Task IO init");
